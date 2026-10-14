@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Trading Agent Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📈 AI Agent for Trading</h1>
+            <p>Real-time Market Data & AI-Powered Sentiment Analysis</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="tickerInput" placeholder="Enter Stock Symbol (e.g. AAPL, TSLA, NVDA, GOOGL)" />
+            <button onclick="analyzeStock()">Analyze Asset</button>
+        </div>
+
+        <div id="loader" class="loader hidden">Analyzing market data with AI...</div>
+
+        <div id="resultContainer" class="result-card hidden">
+            <div class="stock-header">
+                <h2 id="stockName">Company Name</h2>
+                <span id="stockSymbol" class="badge">SYMBOL</span>
+            </div>
+
+            <div class="grid-stats">
+                <div class="stat-item">
+                    <p>Current Price</p>
+                    <h3 id="currentPrice">$0.00</h3>
+                </div>
+                <div class="stat-item">
+                    <p>Change</p>
+                    <h3 id="priceChange">0.00 (0%)</h3>
+                </div>
+                <div class="stat-item">
+                    <p>52-Week High</p>
+                    <h3 id="high52">$0.00</h3>
+                </div>
+                <div class="stat-item">
+                    <p>52-Week Low</p>
+                    <h3 id="low52">$0.00</h3>
+                </div>
+            </div>
+
+            <div class="ai-section">
+                <h3>🤖 AI Agent Insights & Recommendation</h3>
+                <div id="aiAnalysis" class="analysis-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
