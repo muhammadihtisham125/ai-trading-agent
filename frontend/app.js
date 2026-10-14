@@ -1,3 +1,8 @@
+// Dynamic API URL for Local Testing and Live Deployment
+const API_URL = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost" || window.location.protocol === "file:"
+    ? "http://127.0.0.1:8000"
+    : "";
+
 async function analyzeStock() {
     const tickerInput = document.getElementById("tickerInput").value;
     if (!tickerInput) {
@@ -5,7 +10,7 @@ async function analyzeStock() {
         return;
     }
 
-    const ticker = tickerInput.upperCase ? tickerInput.toUpperCase().trim() : tickerInput.trim();
+    const ticker = tickerInput.trim().toUpperCase();
     const loader = document.getElementById("loader");
     const resultCard = document.getElementById("resultContainer");
 
@@ -13,50 +18,31 @@ async function analyzeStock() {
     resultCard.classList.add("hidden");
 
     try {
-        // Fetch Real-time Stock Data via Yahoo Finance Public API
-        const stockResponse = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=1mo&interval=1d`);
-        
-        if (!stockResponse.ok) {
-            throw new Error("Invalid Ticker Symbol or Market Data Unavailable.");
-        }
-
-        const stockJson = await stockResponse.json();
-        const meta = stockJson.chart.result[0].meta;
-        const prices = stockJson.chart.result[0].indicators.quote[0].close;
-
-        const currentPrice = meta.regularMarketPrice.toFixed(2);
-        const prevClose = meta.chartPreviousClose ? meta.chartPreviousClose.toFixed(2) : currentPrice;
-        const priceChange = (currentPrice - prevClose).toFixed(2);
-        const percentageChange = ((priceChange / prevClose) * 100).toFixed(2);
-
-        document.getElementById("stockName").innerText = meta.symbol;
-        document.getElementById("stockSymbol").innerText = meta.symbol;
-        document.getElementById("currentPrice").innerText = `$${currentPrice}`;
-        
-        const changeElem = document.getElementById("priceChange");
-        changeElem.innerText = `${priceChange} (${percentageChange}%)`;
-        changeElem.style.color = priceChange >= 0 ? "#4ade80" : "#f87171";
-
-        document.getElementById("high52").innerText = `$${meta.fiftyTwoWeekHigh || currentPrice}`;
-        document.getElementById("low52").innerText = `$${meta.fiftyTwoWeekLow || currentPrice}`;
-
-        // Direct Gemini AI Analysis via REST API
-        const GEMINI_KEY = "YOUR_GEMINI_API_KEY_HERE"; // Paste your key here
-        
-        const promptText = `Analyze stock ${meta.symbol} at $${currentPrice} (${priceChange}% today). Provide: 1. Sentiment 2. Technical Summary 3. Recommendation (BUY/HOLD/SELL) 4. Key Risks. Keep it concise.`;
-
-        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
+        const response = await fetch(`${API_URL}/analyze`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: promptText }] }]
-            })
+            body: JSON.stringify({ ticker: ticker })
         });
 
-        const aiData = await aiResponse.json();
-        const analysisText = aiData.candidates[0].content.parts[0].text;
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || "Failed to fetch stock data.");
+        }
 
-        document.getElementById("aiAnalysis").innerHTML = marked.parse(analysisText);
+        const data = await response.json();
+
+        document.getElementById("stockName").innerText = data.companyName;
+        document.getElementById("stockSymbol").innerText = data.symbol;
+        document.getElementById("currentPrice").innerText = `$${data.currentPrice}`;
+        
+        const changeElem = document.getElementById("priceChange");
+        changeElem.innerText = `${data.priceChange} (${data.percentageChange}%)`;
+        changeElem.style.color = data.priceChange >= 0 ? "#4ade80" : "#f87171";
+
+        document.getElementById("high52").innerText = `$${data.high52}`;
+        document.getElementById("low52").innerText = `$${data.low52}`;
+
+        document.getElementById("aiAnalysis").innerHTML = marked.parse(data.analysis);
         resultCard.classList.remove("hidden");
 
     } catch (err) {
