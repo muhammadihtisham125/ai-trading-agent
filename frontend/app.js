@@ -1,5 +1,5 @@
 // Local testing Backend URL
-const API_URL = " ";
+const API_URL = "https://ai-trading-agent-woad.vercel.app";
 
 async function analyzeStock() {
     const ticker = document.getElementById("tickerInput").value;
